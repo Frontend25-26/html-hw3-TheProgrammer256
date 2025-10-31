@@ -1,6 +1,349 @@
-body {
+:root {
+	--my-border: 3px solid white;
+	--my-border-radius: 1rem;
+	
+	--text-color: black;
+	--background-color: #e5e5e5;
+	--question-id-color: rgba(202, 202, 202, var(--colors-opacity));
+	
+	--colors-opacity: 0.5;
+	
+	--checked-color: rgba(220, 220, 220, var(--colors-opacity));
+	--unchecked-correct-color: rgba(251, 204, 47, var(--colors-opacity));
+	--unchecked-incorrect-color: rgba(220, 220, 220, var(--colors-opacity));
+	--checked-correct-color: rgba(51, 253, 101, var(--colors-opacity));
+	--checked-incorrect-color: rgba(253, 52, 51, var(--colors-opacity));
+}
+
+body, html {
     margin: 0;
     padding: 0;
 
-    background: #292929;
+    background: white;
+    font-family: 'Spectral-Regular', 'Arial', sans-serif;
+	
+	counter-reset: questionsTotal questionsCorrect 0;
+	
+	scroll-snap-type: proximity;
+	scroll-snap-type: y proximity;
+	
+	color: var(--text-color);
+	background: var(--background-color);
+}
+
+@font-face {
+    font-family: 'Spectral-Regular';
+    src: local('Spectral-Regular'), local('Spectral Regular'),
+    url('./fonts/Spectral-Regular.ttf');
+}
+
+header {
+	text-align: center;
+	scroll-snap-align: start;
+}
+
+header > h1 {
+	margin-top: 0;
+	font-size: 6rem;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 50%;
+    border: var(--my-border);
+    border-radius: var(--my-border-radius);
+	margin: 1rem 0;
+	scroll-snap-align: start;
+	counter-increment: questionsTotal;
+	background: url("img/question.jpg") no-repeat top / cover;
+}
+
+.card .question {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.question-id {
+    font-size: 4rem;
+    padding: 0.25rem 1rem;
+    border: var(--my-border);
+    border-radius: var(--my-border-radius);
+    width: fit-content;
+    background-color: var(--question-id-color);
+    margin: 1rem 0 0 0;
+}
+
+.question-text {
+    font-size: 2rem;
+}
+
+.question-text, .type-specifier {
+    margin: 1rem 0 0.5rem 0;
+}
+
+.code-block {
+    width: 80%;
+    padding: 1rem;
+    border: var(--my-border);
+    border-radius: var(--my-border-radius);
+}
+
+.code {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.type-specifier {
+    font-size: 1.5rem;
+}
+
+.type-specifier .highlight::before {
+    content: "Выберите "
+}
+
+.type-specifier.radio .highlight::after {
+    content: "ОДИН вариант ответа:"
+}
+
+.type-specifier.check .highlight::after {
+    content: "НЕСКОЛЬКО вариантов ответа:"
+}
+
+.form-block {
+	display: flex;
+	flex-wrap: wrap;
+	width: 100%;
+}
+
+.answers-item {
+	width: 50%;
+	aspect-ratio: 4;
+}
+
+section:nth-child(10) .answers-item {
+	width: calc(100% / 3);
+	aspect-ratio: 8 / 3;
+}
+
+.check-block {
+	width: 100%;
+	aspect-ratio: 8;
+	order: 1;
+}
+
+.answers-item, .check-block {
+	position: relative;
+}
+
+.hidden-input {
+	display: block;
+	position: absolute;
+	opacity: 0;
+	cursor: pointer;
+	margin: 0;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: var(--my-border-radius);
+}
+
+.visible-input {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	height: 100%;
+	margin: 0.5rem;
+	border: var(--my-border);
+	border-radius: var(--my-border-radius);
+}
+
+.check-block:has(.hidden-input:not(:checked)) ~ .answers-item > .hidden-input:checked ~ .visible-input {
+	background: var(--checked-color);
+}
+
+.check-block:has(.hidden-input:checked) ~ .answers-item > .hidden-input:not(.correct):not(:checked) ~ .visible-input {
+	background: var(--unchecked-incorrect-color);
+}
+
+.check-block:has(.hidden-input:checked) ~ .answers-item > .hidden-input.correct:not(:checked) ~ .visible-input {
+	background: var(--unchecked-correct-color);
+}
+
+.check-block:has(.hidden-input:checked) ~ .answers-item > .hidden-input:not(.correct):checked ~ .visible-input {
+	background: var(--checked-incorrect-color);
+}
+
+.check-block:has(.hidden-input:checked) ~ .answers-item > .hidden-input.correct:checked ~ .visible-input {
+	background: var(--checked-correct-color);
+}
+
+.checker:not(:checked) ~ .visible-input > .input-label::before {
+	content: "ПРОВЕРИТЬ";
+}
+
+.checker:checked {
+	pointer-events: none;
+}
+
+.check-block:has(.hidden-input:checked) ~ .answers-item > .hidden-input {
+	pointer-events: none;
+}
+
+.card {
+	display: none;
+}
+
+.card:first-child, .card:has(.form-block > .check-block > .hidden-input:checked) + .card {
+	display: flex;
+}
+
+.card:has(.form-block > .check-block > .hidden-input:not(:checked)) {
+	margin-bottom: 50vh;
+}
+
+.checker:checked ~ .visible-input {
+	background: var(--checked-correct-color)
+}
+
+.checker:checked ~ .visible-input .input-label::before {
+	content: "ПРАВИЛЬНЫЙ ОТВЕТ";
+	counter-increment: questionsCorrect;
+}
+
+.form-block:has(.answers-item > .hidden-input.correct:not(:checked)) .checker:checked ~ .visible-input {
+	background: var(--unchecked-correct-color);
+}
+
+.form-block:has(.answers-item > .hidden-input.correct:not(:checked)) .checker:checked ~ .visible-input .input-label::before {
+	content: "ЧАСТИЧНЫЙ ОТВЕТ";
+	counter-increment: none;
+}
+
+.form-block:has(.answers-item > .hidden-input:not(.correct):checked) .checker:checked ~ .visible-input {
+	background: var(--checked-incorrect-color);
+}
+
+.form-block:has(.answers-item > .hidden-input:not(.correct):checked) .checker:checked ~ .visible-input .input-label::before {
+	content: "НЕПРАВИЛЬНЫЙ ОТВЕТ";
+	counter-increment: none;
+}
+
+.input-label::before {
+	font-size: 2rem;
+}
+
+footer {
+	display: none;
+}
+
+main:has(.card:last-child > .form-block > .check-block > .hidden-input:checked) + footer {
+	display: flex;
+	
+	justify-content: center;
+	align-items: center;
+	width: auto;
+	aspect-ratio: 4;
+	margin: 3rem;
+	border: var(--my-border);
+	border-radius: var(--my-border-radius);
+	font-size: 4rem;
+	background: url("img/congrats.jpg") no-repeat top / cover;
+}
+
+footer .first::after {
+	content: counter(questionsCorrect);
+}
+
+footer .second::after {
+	content: counter(questionsTotal);
+}
+
+/* От кода дальше можно избавиться методами четвёртой лекции или с помощью JS */
+
+main > section:nth-child(1) .id-tag::before {
+    content: "1";
+}
+
+main > section:nth-child(2) .id-tag::before {
+    content: "2";
+}
+
+main > section:nth-child(3) .id-tag::before {
+    content: "3";
+}
+
+main > section:nth-child(4) .id-tag::before {
+    content: "4";
+}
+
+main > section:nth-child(5) .id-tag::before {
+    content: "5";
+}
+
+main > section:nth-child(6) .id-tag::before {
+    content: "6";
+}
+
+main > section:nth-child(7) .id-tag::before {
+    content: "7";
+}
+
+main > section:nth-child(8) .id-tag::before {
+    content: "8";
+}
+
+main > section:nth-child(9) .id-tag::before {
+    content: "9";
+}
+
+main > section:nth-child(10) .id-tag::before {
+    content: "10";
+}
+
+.answers-item:nth-child(2) .input-label::before {
+	content: "A";
+}
+
+.answers-item:nth-child(3) .input-label::before {
+	content: "B";
+}
+
+.answers-item:nth-child(4) .input-label::before {
+	content: "C";
+}
+
+.answers-item:nth-child(5) .input-label::before {
+	content: "D";
+}
+
+.answers-item:nth-child(6) .input-label::before {
+	content: "E";
+}
+
+.answers-item:nth-child(7) .input-label::before {
+	content: "F";
+}
+
+.answers-item:nth-child(8) .input-label::before {
+	content: "G";
+}
+
+.answers-item:nth-child(9) .input-label::before {
+	content: "H";
+}
+
+.answers-item:nth-child(10) .input-label::before {
+	content: "I";
 }
